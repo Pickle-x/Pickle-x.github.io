@@ -1,193 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Study Timer</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Timer Pro</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Study App</h1>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h2>⏱ Study Timer Pro</h2>
+      <p class="subtitle">Studymore like a pro</p>
+      <nav>
+        <ul>
+          <li data-tab="study" class="active">🕒 Study</li>
+          <li data-tab="leaderboard">🏆 Leaderboard</li>
+          <li data-tab="stats">📊 Stats</li>
+          <li data-tab="calendar">📅 Calendar</li>
+          <li data-tab="achievements">🎖 Achievements</li>
+        </ul>
+      </nav>
+    </aside>
 
-    <!-- Navigation Tabs -->
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="timerPage">⏱ Timer</button>
-      <button class="tab-btn" data-tab="leaderboardPage">🏆 Leaderboard</button>
-      <button class="tab-btn" data-tab="achievementsPage">⭐ Achievements</button>
-    </div>
+    <!-- Main content -->
+    <main class="content">
+      <!-- Study page -->
+      <section id="study" class="tab active">
+        <select id="subjectSelect">
+          <option value="">Select a subject ⬇</option>
+          <option value="math">Math</option>
+          <option value="science">Science</option>
+          <option value="history">History</option>
+        </select>
 
-    <!-- Timer Page -->
-    <div id="timerPage" class="tab-content active">
-      <div class="timer" id="timer">25:00</div>
+        <div class="timer" id="timer">00:00:00</div>
+        <button id="studyBtn">Study</button>
+      </section>
 
-      <div class="controls">
-        <button id="startBtn">Start</button>
-        <button id="pauseBtn">Pause</button>
-        <button id="resetBtn">Reset</button>
-      </div>
+      <!-- Leaderboard -->
+      <section id="leaderboard" class="tab">
+        <h1>Leaderboard</h1>
+        <ul id="leaderboardList"></ul>
+      </section>
 
-      <div class="mode">
-        <h2>Modes</h2>
-        <button class="mode-btn" data-time="1500">Pomodoro (25m)</button>
-        <button class="mode-btn" data-time="300">Short Break (5m)</button>
-        <button class="mode-btn" data-time="900">Long Break (15m)</button>
-        <button id="freeBtn">Free Study</button>
-        <button id="customBtn">Custom</button>
-      </div>
-    </div>
+      <!-- Stats -->
+      <section id="stats" class="tab">
+        <h1>Stats</h1>
+        <p>(graphs and heatmap go here later)</p>
+      </section>
 
-    <!-- Leaderboard Page -->
-    <div id="leaderboardPage" class="tab-content">
-      <h2>Leaderboard</h2>
-      <ul id="leaderboard"></ul>
-    </div>
+      <!-- Calendar -->
+      <section id="calendar" class="tab">
+        <h1>Calendar</h1>
+        <p>(calendar view here later)</p>
+      </section>
 
-    <!-- Achievements Page -->
-    <div id="achievementsPage" class="tab-content">
-      <h2>Achievements</h2>
-      <ul id="achievements"></ul>
-    </div>
+      <!-- Achievements -->
+      <section id="achievements" class="tab">
+        <h1>Achievements</h1>
+        <ul id="achievementsList"></ul>
+      </section>
+    </main>
   </div>
 
   <script>
-    // --- TIMER LOGIC ---
+    // --- Tab switching ---
+    const tabs = document.querySelectorAll(".tab");
+    const navItems = document.querySelectorAll(".sidebar nav ul li");
+
+    navItems.forEach(item => {
+      item.addEventListener("click", () => {
+        navItems.forEach(i => i.classList.remove("active"));
+        tabs.forEach(tab => tab.classList.remove("active"));
+
+        item.classList.add("active");
+        document.getElementById(item.dataset.tab).classList.add("active");
+      });
+    });
+
+    // --- Timer ---
     let timerDisplay = document.getElementById("timer");
-    let startBtn = document.getElementById("startBtn");
-    let pauseBtn = document.getElementById("pauseBtn");
-    let resetBtn = document.getElementById("resetBtn");
-    let modeBtns = document.querySelectorAll(".mode-btn");
-    let freeBtn = document.getElementById("freeBtn");
-    let customBtn = document.getElementById("customBtn");
-    
-    let countdown;
-    let timeLeft = 1500; // default 25 mins
-    let isFreeStudy = false;
-    let totalStudyTime = 0; // in seconds
+    let studyBtn = document.getElementById("studyBtn");
+    let countdown, elapsed = 0, running = false;
 
-    function updateDisplay() {
-      let minutes = Math.floor(timeLeft / 60);
-      let seconds = timeLeft % 60;
-      timerDisplay.textContent = 
-        `${minutes.toString().padStart(2,"0")}:${seconds.toString().padStart(2,"0")}`;
+    function updateTimer() {
+      let hrs = Math.floor(elapsed / 3600);
+      let mins = Math.floor((elapsed % 3600) / 60);
+      let secs = elapsed % 60;
+      timerDisplay.textContent =
+        `${hrs.toString().padStart(2,"0")}:${mins.toString().padStart(2,"0")}:${secs.toString().padStart(2,"0")}`;
     }
 
-    function startTimer() {
-      clearInterval(countdown);
-      countdown = setInterval(() => {
-        if (isFreeStudy) {
-          timeLeft++;
-          totalStudyTime++;
-          updateDisplay();
-          updateStats();
-        } else {
-          if (timeLeft > 0) {
-            timeLeft--;
-            totalStudyTime++;
-            updateDisplay();
-            updateStats();
-          } else {
-            clearInterval(countdown);
-            alert("Time’s up! 🎉");
-          }
-        }
-      }, 1000);
-    }
-
-    function pauseTimer() {
-      clearInterval(countdown);
-    }
-
-    function resetTimer() {
-      clearInterval(countdown);
-      updateDisplay();
-    }
-
-    startBtn.addEventListener("click", startTimer);
-    pauseBtn.addEventListener("click", pauseTimer);
-    resetBtn.addEventListener("click", () => {
-      clearInterval(countdown);
-      if (isFreeStudy) {
-        timeLeft = 0;
+    studyBtn.addEventListener("click", () => {
+      if (!running) {
+        studyBtn.textContent = "Pause";
+        countdown = setInterval(() => {
+          elapsed++;
+          updateTimer();
+        }, 1000);
+        running = true;
       } else {
-        timeLeft = 1500; // reset to default Pomodoro
+        clearInterval(countdown);
+        studyBtn.textContent = "Study";
+        running = false;
       }
-      updateDisplay();
     });
 
-    modeBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        isFreeStudy = false;
-        timeLeft = parseInt(btn.dataset.time);
-        resetTimer();
-      });
-    });
-
-    freeBtn.addEventListener("click", () => {
-      isFreeStudy = true;
-      timeLeft = 0; // stopwatch mode
-      resetTimer();
-    });
-
-    customBtn.addEventListener("click", () => {
-      isFreeStudy = false;
-      let custom = prompt("Enter custom time in minutes:");
-      timeLeft = parseInt(custom) * 60 || 0;
-      resetTimer();
-    });
-
-    updateDisplay();
-
-    // --- LEADERBOARD & ACHIEVEMENTS ---
-    let leaderboard = document.getElementById("leaderboard");
-    let achievementsList = document.getElementById("achievements");
-
-    let userStats = {
-      name: "You",
-      totalMinutes: 0
-    };
-
-    let achievements = [
-      { name: "First Step", requirement: 60 },
-      { name: "Focused Learner", requirement: 300 },
-      { name: "Dedicated Scholar", requirement: 600 },
-      { name: "Study Master", requirement: 1200 }
-    ];
-
-    function updateStats() {
-      userStats.totalMinutes = Math.floor(totalStudyTime / 60);
-
-      // Leaderboard (only one user here, but could expand)
-      leaderboard.innerHTML = `
-        <li><strong>${userStats.name}</strong>: ${userStats.totalMinutes} minutes</li>
-      `;
-
-      // Achievements
-      achievementsList.innerHTML = "";
-      achievements.forEach(ach => {
-        let unlocked = userStats.totalMinutes >= ach.requirement;
-        let li = document.createElement("li");
-        li.textContent = `${ach.name} - ${ach.requirement} mins`;
-        li.style.color = unlocked ? "#ffcc70" : "#666";
-        achievementsList.appendChild(li);
-      });
-    }
-
-    updateStats();
-
-    // --- TAB SWITCHING ---
-    let tabBtns = document.querySelectorAll(".tab-btn");
-    let tabContents = document.querySelectorAll(".tab-content");
-
-    tabBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        tabBtns.forEach(b => b.classList.remove("active"));
-        tabContents.forEach(c => c.classList.remove("active"));
-
-        btn.classList.add("active");
-        document.getElementById(btn.dataset.tab).classList.add("active");
-      });
-    });
+    updateTimer();
   </script>
 </body>
 </html>
