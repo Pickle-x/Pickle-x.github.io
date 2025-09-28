@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Study Timer</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>Study Timer</h1>
+    <div class="timer" id="timer">25:00</div>
+
+    <div class="controls">
+      <button id="startBtn">Start</button>
+      <button id="pauseBtn">Pause</button>
+      <button id="resetBtn">Reset</button>
+    </div>
+
+    <div class="mode">
+      <button class="mode-btn" data-time="1500">Pomodoro (25m)</button>
+      <button class="mode-btn" data-time="300">Break (5m)</button>
+      <button class="mode-btn" data-time="0" id="customBtn">Custom</button>
+    </div>
+  </div>
+
+  <script>
+    let timerDisplay = document.getElementById("timer");
+    let startBtn = document.getElementById("startBtn");
+    let pauseBtn = document.getElementById("pauseBtn");
+    let resetBtn = document.getElementById("resetBtn");
+    let modeBtns = document.querySelectorAll(".mode-btn");
+    
+    let countdown;
+    let timeLeft = 1500; // default 25 mins
+
+    function updateDisplay() {
+      let minutes = Math.floor(timeLeft / 60);
+      let seconds = timeLeft % 60;
+      timerDisplay.textContent = 
+        `${minutes.toString().padStart(2,"0")}:${seconds.toString().padStart(2,"0")}`;
+    }
+
+    function startTimer() {
+      clearInterval(countdown);
+      countdown = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          updateDisplay();
+        } else {
+          clearInterval(countdown);
+          alert("Time’s up! 🎉");
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(countdown);
+    }
+
+    function resetTimer() {
+      clearInterval(countdown);
+      updateDisplay();
+    }
+
+    startBtn.addEventListener("click", startTimer);
+    pauseBtn.addEventListener("click", pauseTimer);
+    resetBtn.addEventListener("click", () => {
+      resetTimer();
+      timeLeft = 1500; // default reset to 25 min
+      updateDisplay();
+    });
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (btn.dataset.time == "0") {
+          let custom = prompt("Enter custom time in minutes:");
+          timeLeft = parseInt(custom) * 60 || 0;
+        } else {
+          timeLeft = parseInt(btn.dataset.time);
+        }
+        resetTimer();
+      });
+    });
+
+    updateDisplay();
+  </script>
+</body>
+</html>
