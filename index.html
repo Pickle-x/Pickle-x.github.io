@@ -1,61 +1,193 @@
-/* Dark, modern design */
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #121212;
-  color: #f0f0f0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Study Timer</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>Study App</h1>
 
-.container {
-  text-align: center;
-  background: #1e1e1e;
-  padding: 2rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-  width: 320px;
-}
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="timerPage">⏱ Timer</button>
+      <button class="tab-btn" data-tab="leaderboardPage">🏆 Leaderboard</button>
+      <button class="tab-btn" data-tab="achievementsPage">⭐ Achievements</button>
+    </div>
 
-h1 {
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  color: #ffcc70;
-}
+    <!-- Timer Page -->
+    <div id="timerPage" class="tab-content active">
+      <div class="timer" id="timer">25:00</div>
 
-.timer {
-  font-size: 4rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-}
+      <div class="controls">
+        <button id="startBtn">Start</button>
+        <button id="pauseBtn">Pause</button>
+        <button id="resetBtn">Reset</button>
+      </div>
 
-.controls button, 
-.mode button {
-  margin: 0.5rem;
-  padding: 0.75rem 1.2rem;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+      <div class="mode">
+        <h2>Modes</h2>
+        <button class="mode-btn" data-time="1500">Pomodoro (25m)</button>
+        <button class="mode-btn" data-time="300">Short Break (5m)</button>
+        <button class="mode-btn" data-time="900">Long Break (15m)</button>
+        <button id="freeBtn">Free Study</button>
+        <button id="customBtn">Custom</button>
+      </div>
+    </div>
 
-.controls button {
-  background: #ffcc70;
-  color: #121212;
-}
+    <!-- Leaderboard Page -->
+    <div id="leaderboardPage" class="tab-content">
+      <h2>Leaderboard</h2>
+      <ul id="leaderboard"></ul>
+    </div>
 
-.mode button {
-  background: #292929;
-  color: #f0f0f0;
-}
+    <!-- Achievements Page -->
+    <div id="achievementsPage" class="tab-content">
+      <h2>Achievements</h2>
+      <ul id="achievements"></ul>
+    </div>
+  </div>
 
-.controls button:hover {
-  background: #ffaa00;
-}
+  <script>
+    // --- TIMER LOGIC ---
+    let timerDisplay = document.getElementById("timer");
+    let startBtn = document.getElementById("startBtn");
+    let pauseBtn = document.getElementById("pauseBtn");
+    let resetBtn = document.getElementById("resetBtn");
+    let modeBtns = document.querySelectorAll(".mode-btn");
+    let freeBtn = document.getElementById("freeBtn");
+    let customBtn = document.getElementById("customBtn");
+    
+    let countdown;
+    let timeLeft = 1500; // default 25 mins
+    let isFreeStudy = false;
+    let totalStudyTime = 0; // in seconds
 
-.mode button:hover {
-  background: #444;
-}
+    function updateDisplay() {
+      let minutes = Math.floor(timeLeft / 60);
+      let seconds = timeLeft % 60;
+      timerDisplay.textContent = 
+        `${minutes.toString().padStart(2,"0")}:${seconds.toString().padStart(2,"0")}`;
+    }
+
+    function startTimer() {
+      clearInterval(countdown);
+      countdown = setInterval(() => {
+        if (isFreeStudy) {
+          timeLeft++;
+          totalStudyTime++;
+          updateDisplay();
+          updateStats();
+        } else {
+          if (timeLeft > 0) {
+            timeLeft--;
+            totalStudyTime++;
+            updateDisplay();
+            updateStats();
+          } else {
+            clearInterval(countdown);
+            alert("Time’s up! 🎉");
+          }
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(countdown);
+    }
+
+    function resetTimer() {
+      clearInterval(countdown);
+      updateDisplay();
+    }
+
+    startBtn.addEventListener("click", startTimer);
+    pauseBtn.addEventListener("click", pauseTimer);
+    resetBtn.addEventListener("click", () => {
+      clearInterval(countdown);
+      if (isFreeStudy) {
+        timeLeft = 0;
+      } else {
+        timeLeft = 1500; // reset to default Pomodoro
+      }
+      updateDisplay();
+    });
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        isFreeStudy = false;
+        timeLeft = parseInt(btn.dataset.time);
+        resetTimer();
+      });
+    });
+
+    freeBtn.addEventListener("click", () => {
+      isFreeStudy = true;
+      timeLeft = 0; // stopwatch mode
+      resetTimer();
+    });
+
+    customBtn.addEventListener("click", () => {
+      isFreeStudy = false;
+      let custom = prompt("Enter custom time in minutes:");
+      timeLeft = parseInt(custom) * 60 || 0;
+      resetTimer();
+    });
+
+    updateDisplay();
+
+    // --- LEADERBOARD & ACHIEVEMENTS ---
+    let leaderboard = document.getElementById("leaderboard");
+    let achievementsList = document.getElementById("achievements");
+
+    let userStats = {
+      name: "You",
+      totalMinutes: 0
+    };
+
+    let achievements = [
+      { name: "First Step", requirement: 60 },
+      { name: "Focused Learner", requirement: 300 },
+      { name: "Dedicated Scholar", requirement: 600 },
+      { name: "Study Master", requirement: 1200 }
+    ];
+
+    function updateStats() {
+      userStats.totalMinutes = Math.floor(totalStudyTime / 60);
+
+      // Leaderboard (only one user here, but could expand)
+      leaderboard.innerHTML = `
+        <li><strong>${userStats.name}</strong>: ${userStats.totalMinutes} minutes</li>
+      `;
+
+      // Achievements
+      achievementsList.innerHTML = "";
+      achievements.forEach(ach => {
+        let unlocked = userStats.totalMinutes >= ach.requirement;
+        let li = document.createElement("li");
+        li.textContent = `${ach.name} - ${ach.requirement} mins`;
+        li.style.color = unlocked ? "#ffcc70" : "#666";
+        achievementsList.appendChild(li);
+      });
+    }
+
+    updateStats();
+
+    // --- TAB SWITCHING ---
+    let tabBtns = document.querySelectorAll(".tab-btn");
+    let tabContents = document.querySelectorAll(".tab-content");
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabBtns.forEach(b => b.classList.remove("active"));
+        tabContents.forEach(c => c.classList.remove("active"));
+
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+      });
+    });
+  </script>
+</body>
+</html>
