@@ -1,4 +1,3 @@
-/* Dark, modern design */
 body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -16,12 +15,12 @@ body {
   padding: 2rem;
   border-radius: 20px;
   box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-  width: 320px;
+  width: 360px;
 }
 
 h1 {
   font-size: 2rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: #ffcc70;
 }
 
@@ -31,9 +30,14 @@ h1 {
   margin-bottom: 1.5rem;
 }
 
+.controls, .mode {
+  margin-top: 1.2rem;
+}
+
 .controls button, 
-.mode button {
-  margin: 0.5rem;
+.mode button, 
+.tabs button {
+  margin: 0.4rem;
   padding: 0.75rem 1.2rem;
   border: none;
   border-radius: 12px;
@@ -52,10 +56,48 @@ h1 {
   color: #f0f0f0;
 }
 
+.tabs button {
+  background: #292929;
+  color: #f0f0f0;
+}
+
 .controls button:hover {
   background: #ffaa00;
 }
 
-.mode button:hover {
+.mode button:hover, 
+.tabs button:hover {
   background: #444;
+}
+
+/* Tabs */
+.tabs {
+  margin-bottom: 1rem;
+}
+
+.tab-btn.active {
+  background: #ffcc70;
+  color: #121212;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  color: #999;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+ul li {
+  margin: 0.5rem 0;
 }
